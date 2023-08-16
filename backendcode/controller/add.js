@@ -85,21 +85,43 @@ exports.addexpense = async (req, res, next) => {
 //Finally, the res.json() method is used to send a JSON response back to the client. 
 //It sends an object with a property named alluser, which contains the modifiedData array.
 
+// This function handles the logic for fetching and paginating user expenses
 exports.getexpense = async (req, res, next) => {
     try {
-        const data = await alldetails.findAll({ where: { userId: req.user.id } }); //{where:{userId:req.user.id}}
-        //when we make an get request url along with in headers we are passing token
-        //backend will recieves token and in the middleware we are dcrypting the token so we will get userId
-        //from the userId backend will comes to know that who's loggedin and backend get the respective user's expense from expense table
-        //it send this expense as a respond back to the client
-        res.json({ getexpense: data });
-        console.log('res from getexpense method', data);
-    } catch (error) {
-        res.json({ Error: error })
-        console.log('error from getexpense method', error);
-    }
-}
+        // Count the total number of expenses for the user
+        const totalexpense = await alldetails.count({ where: { userId: req.user.id } });
 
+        // Extract the requested page and pageSize from the query parameters
+        let page = +req.query.page || 1;
+        const pageSize = +req.query.pagesize || 3;
+
+        // Fetch expenses for the current page and pageSize
+        alldetails
+            .findAll({
+                where: { userId: req.user.id },
+                offset: (page - 1) * pageSize,
+                limit: pageSize,
+            })
+            .then((expenses) => {
+                // Calculate and send the pagination metadata along with the expenses
+                res.status(201).json({
+                    expenses: expenses,
+                    currentPage: page,
+                    hasNextPage: page * pageSize < totalexpense,
+                    nextPage: page + 1,
+                    hasPreviousPage: page > 1,
+                    previousPage: page - 1,
+                    lastPage: Math.ceil(totalexpense / pageSize),
+                });
+            })
+            .catch((err) => {
+                throw new Error(err);
+            });
+    } catch (err) {
+        // Handle internal server error
+        res.status(500).json(err);
+    }
+};
 
 exports.deleteexpense = async (req, res) => {
     //A transaction is a way to group multiple database operations together in a single logical unit.
@@ -193,6 +215,25 @@ exports.downloadexpense = async (req, res) => {
         res.status(500).json({ fileURL: '', success: false, err: err });
     }
 };
+
+
+//paginate expenses
+exports.paginateExpenses=async(req,res)=>{
+    try{
+        const page=req.query.page
+      const data=  await expensedatabase.findAll({
+        offset:(page)*10,
+        limit:10,
+        where: { userId:req.user.id }
+    })
+      res.json({Data:data})
+    }catch(err){
+        console.log("pagination error-->",err)
+        res.json({Error:err})
+    }
+}
+
+
 
 /*
 exports.editexpense = async (req,res) =>{
