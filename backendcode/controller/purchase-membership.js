@@ -2,6 +2,8 @@ const Razorpay = require('razorpay');
 const orderDb = require('../models/order');
 const jwt = require('jsonwebtoken');
 
+require("dotenv").config(); // Load environment variables from .env file
+
 //after successful login click on Buy premium button then check the res getpremium where you can get order,key_id etc
 //check the userlist databse table staus:pending,u will get orderId
 //this menas when u click on Buy premium button razorpay will comes to know that okay someone is making an order 
@@ -12,9 +14,9 @@ const jwt = require('jsonwebtoken');
 exports.getPremium = async (req, res, next) => {
     try {
         const Razor = new Razorpay({ //i have created new object called Razor and here my backend interns connect to the razorpay
-            key_id: 'rzp_test_saG0Z18JgbQkTr', //using secret key id,key secret i have used .env because i have stored these secret inside .env folder
+            key_id: process.env.RZP_KEY_ID, //using secret key id,key secret i have used .env because i have stored these secret inside .env folder
             //why i stored these secret in .env folder because i dont want to push these secret to git   
-            key_secret: 'oh0QrxgMWerzQ2MHDUU8i6Eh'
+            key_secret: process.env.RZP_KEY_SECRET
             //from this screts id,key razorpay comes to know that okay this is shreyas comapny tries to create an order
         })
 
