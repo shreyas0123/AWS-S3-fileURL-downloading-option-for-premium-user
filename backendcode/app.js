@@ -42,6 +42,7 @@ app.use(helmet());
 app.use(compression());
 //morgan package is used to log http request and we are creating file called "request.log" in order to store the http request
 app.use(morgan('combined', {stream:accessLogStream}));
+//app.use(express.static('public'));
 
 //Relationship between User and Expense table:
 //create an association rules:
